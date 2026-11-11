@@ -89,12 +89,16 @@ found a bug in the original Python harness: see "One weight" below.
 
 - `expA.onnx`, `expB.onnx`: the two hand-written networks as self-contained files. Open one in
   [Netron](https://netron.app) to see the graph; any ONNX runtime can run them.
-- `possessionnet.onnx`: the architecture with every weight zero and its 24 weight tensors declared
-  as graph inputs, so one file can run any network by feeding the weights next to the frames.
+- `possessionnet.onnx`: the same graph with every weight zero.
+- `manifest.json`: the name and shape of each of the 24 weight tensors.
 
-The export script checks all three against PyTorch with ONNX Runtime in Python (difference about
-1e-6 for A, 2.5e-5 for B). **The .NET app does not use them yet**: it runs the plain C# forward
-pass above. Wiring `Microsoft.ML.OnnxRuntime` into the app is the open item.
+All three files have the same size and the same structure; only the weight bytes differ. The
+export script runs the two networks in ONNX Runtime (Python) and compares with PyTorch: the logits
+differ by about 1e-6 for A and 2.5e-5 for B. `python tools/export_onnx.py --verify file.onnx
+--against expB` does that check for any other file.
+
+**The .NET projects do not use these files.** The app runs the plain C# forward pass above. Reading
+or running ONNX from .NET is not implemented here; it is the open item.
 
 ## For a talk
 
