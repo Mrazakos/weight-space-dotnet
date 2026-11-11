@@ -1,0 +1,13 @@
+{
+ "run": "expC_edit_trained",
+ "base": "models/expB_bw3met6k_s0.pt",
+ "budget": 25,
+ "max_turns": 40,
+ "model": "claude-fable-5-2",
+ "effort": "high",
+ "turns_done": 24,
+ "passes_used": 20,
+ "complete": true,
+ "finished_with_final_answer": true,
+ "weights_changed": 0
+}

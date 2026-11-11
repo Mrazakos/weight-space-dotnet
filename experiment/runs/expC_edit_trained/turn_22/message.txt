@@ -1,0 +1,25 @@
+OUTPUT of your block (ran 31 s). Forward passes used: 20 of 25. Replies left: 18.
+----
+four-view sensitivity to logit scale and D offset (free, from stored m)
+scale 0.5                  | df sF1 0.7303 mF1 0.9143 n 130/174 acc 0.9266 | sc sF1 0.8920 mF1 0.9695 n  67/ 75 acc 0.9758
+scale 0.7                  | df sF1 0.7427 mF1 0.9157 n 136/174 acc 0.9280 | sc sF1 0.9120 mF1 0.9715 n  69/ 75 acc 0.9772
+scale 1.0                  | df sF1 0.7488 mF1 0.9160 n 144/174 acc 0.9285 | sc sF1 0.8899 mF1 0.9699 n  71/ 75 acc 0.9762
+scale 1.4                  | df sF1 0.7414 mF1 0.9161 n 150/174 acc 0.9284 | sc sF1 0.8899 mF1 0.9699 n  71/ 75 acc 0.9762
+scale 2.0                  | df sF1 0.7414 mF1 0.9159 n 150/174 acc 0.9283 | sc sF1 0.8899 mF1 0.9699 n  71/ 75 acc 0.9762
+D offset -1.0              | df sF1 0.7327 mF1 0.9149 n 151/174 acc 0.9268 | sc sF1 0.8818 mF1 0.9680 n  72/ 75 acc 0.9740
+D offset -0.5              | df sF1 0.7457 mF1 0.9161 n 146/174 acc 0.9282 | sc sF1 0.8870 mF1 0.9698 n  72/ 75 acc 0.9758
+D offset +0.5              | df sF1 0.7297 mF1 0.9150 n 140/174 acc 0.9276 | sc sF1 0.8899 mF1 0.9705 n  71/ 75 acc 0.9768
+D offset +1.0              | df sF1 0.7243 mF1 0.9137 n 140/174 acc 0.9263 | sc sF1 0.8938 mF1 0.9697 n  70/ 75 acc 0.9759
+
+weight read
+input column norms, global 0..12: [1.06 1.46 0.79 2.86 1.74 1.47 1.28 1.46 0.74 2.45 2.08 1.05 0.96]  d1_diff: 1.21
+block feature: HOME norm / AWAY norm
+  d1 1.45/1.26  d2 0.93/0.98  n2 1.74/1.84  n5 1.33/1.39  n10 1.26/1.17  relv 1.24/1.18  near_speed 1.52/1.57  n_seen 0.96/0.94  cx 1.15/1.25  cy 0.90/0.97  sx 1.07/1.07  sy 1.55/1.70  front 1.25/1.12  back 1.01/1.05  mean_speed 1.44/1.41  slow 1.59/1.52  top_speed 1.74/1.71
+m units: n with std<0.02 (dead): 0 ; max activation overall 28.36 ; units with max>6: 71
+top m units by |w|*std: [(22, 0.91, [-0.10000000149011612, -0.07000000029802322, 0.10000000149011612]), (101, 0.89, [0.10000000149011612, 0.07000000029802322, -0.25]), (62, 0.74, [0.03999999910593033, 0.03999999910593033, -0.20000000298023224]), (30, 0.74, [0.09000000357627869, -0.15000000596046448, 0.09000000357627869]), (124, 0.73, [0.07000000029802322, 0.05000000074505806, -0.2199999988079071]), (26, 0.7, [-0.17000000178813934, 0.07999999821186066, 0.07000000029802322]), (72, 0.65, [-0.05999999865889549, -0.03999999910593033, 0.33000001311302185]), (8, 0.63, [-0.009999999776482582, -0.10999999940395355, 0.09000000357627869])]
+gru1f update-gate bias: mean +0.17 min -0.41 max +0.70 ; ||Whz|| 19.1 ||Wiz|| 19.1 ||Whn|| 13.0
+gru1b update-gate bias: mean +0.20 min -0.27 max +0.54 ; ||Whz|| 19.9 ||Wiz|| 18.6 ||Whn|| 13.6
+gru2f update-gate bias: mean +0.20 min -0.09 max +0.73 ; ||Whz|| 16.6 ||Wiz|| 23.8 ||Whn|| 13.5
+gru2b update-gate bias: mean +0.21 min -0.24 max +0.66 ; ||Whz|| 15.8 ||Wiz|| 23.6 ||Whn|| 12.4
+any non-finite weights: False
+----

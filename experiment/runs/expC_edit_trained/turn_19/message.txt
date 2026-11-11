@@ -1,0 +1,5 @@
+OUTPUT of your block (ran 173 s). Forward passes used: 20 of 25. Replies left: 21.
+----
+BASE 4 views               | df sF1 0.7488 mF1 0.9160 n 144/174 acc 0.9285 | sc sF1 0.8899 mF1 0.9699 n  71/ 75 acc 0.9762
+passes left 5
+----

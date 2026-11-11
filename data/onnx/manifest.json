@@ -1,0 +1,167 @@
+{
+ "input": "x [1, frames, 48], plus the 24 weight tensors below (optional; default 0)",
+ "outputs": [
+  "logits [1, frames, 3]",
+  "gru1 [1, frames, 256]"
+ ],
+ "opset": 17,
+ "initializers": {
+  "inp.0.weight": {
+   "state_dict_key": "inp.0.weight",
+   "shape": [
+    128,
+    48
+   ]
+  },
+  "inp.0.bias": {
+   "state_dict_key": "inp.0.bias",
+   "shape": [
+    128
+   ]
+  },
+  "conv.weight": {
+   "state_dict_key": "conv.weight",
+   "shape": [
+    128,
+    128,
+    9
+   ]
+  },
+  "conv.bias": {
+   "state_dict_key": "conv.bias",
+   "shape": [
+    128
+   ]
+  },
+  "head.0.weight": {
+   "state_dict_key": "head.0.weight",
+   "shape": [
+    128,
+    384
+   ]
+  },
+  "head.0.bias": {
+   "state_dict_key": "head.0.bias",
+   "shape": [
+    128
+   ]
+  },
+  "head.2.weight": {
+   "state_dict_key": "head.2.weight",
+   "shape": [
+    3,
+    128
+   ]
+  },
+  "head.2.bias": {
+   "state_dict_key": "head.2.bias",
+   "shape": [
+    3
+   ]
+  },
+  "gru1.weight_ih_l0": {
+   "state_dict_key": "gru.weight_ih_l0",
+   "shape": [
+    384,
+    128
+   ]
+  },
+  "gru1.weight_hh_l0": {
+   "state_dict_key": "gru.weight_hh_l0",
+   "shape": [
+    384,
+    128
+   ]
+  },
+  "gru1.bias_ih_l0": {
+   "state_dict_key": "gru.bias_ih_l0",
+   "shape": [
+    384
+   ]
+  },
+  "gru1.bias_hh_l0": {
+   "state_dict_key": "gru.bias_hh_l0",
+   "shape": [
+    384
+   ]
+  },
+  "gru1.weight_ih_l0_reverse": {
+   "state_dict_key": "gru.weight_ih_l0_reverse",
+   "shape": [
+    384,
+    128
+   ]
+  },
+  "gru1.weight_hh_l0_reverse": {
+   "state_dict_key": "gru.weight_hh_l0_reverse",
+   "shape": [
+    384,
+    128
+   ]
+  },
+  "gru1.bias_ih_l0_reverse": {
+   "state_dict_key": "gru.bias_ih_l0_reverse",
+   "shape": [
+    384
+   ]
+  },
+  "gru1.bias_hh_l0_reverse": {
+   "state_dict_key": "gru.bias_hh_l0_reverse",
+   "shape": [
+    384
+   ]
+  },
+  "gru2.weight_ih_l0": {
+   "state_dict_key": "gru.weight_ih_l1",
+   "shape": [
+    384,
+    256
+   ]
+  },
+  "gru2.weight_hh_l0": {
+   "state_dict_key": "gru.weight_hh_l1",
+   "shape": [
+    384,
+    128
+   ]
+  },
+  "gru2.bias_ih_l0": {
+   "state_dict_key": "gru.bias_ih_l1",
+   "shape": [
+    384
+   ]
+  },
+  "gru2.bias_hh_l0": {
+   "state_dict_key": "gru.bias_hh_l1",
+   "shape": [
+    384
+   ]
+  },
+  "gru2.weight_ih_l0_reverse": {
+   "state_dict_key": "gru.weight_ih_l1_reverse",
+   "shape": [
+    384,
+    256
+   ]
+  },
+  "gru2.weight_hh_l0_reverse": {
+   "state_dict_key": "gru.weight_hh_l1_reverse",
+   "shape": [
+    384,
+    128
+   ]
+  },
+  "gru2.bias_ih_l0_reverse": {
+   "state_dict_key": "gru.bias_ih_l1_reverse",
+   "shape": [
+    384
+   ]
+  },
+  "gru2.bias_hh_l0_reverse": {
+   "state_dict_key": "gru.bias_hh_l1_reverse",
+   "shape": [
+    384
+   ]
+  }
+ }
+}

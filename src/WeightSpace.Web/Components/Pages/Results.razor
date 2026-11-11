@@ -1,0 +1,59 @@
+@page "/results"
+@inject DemoData Data
+
+<PageTitle>Results</PageTitle>
+
+<h1>Above the baseline, below training</h1>
+<p class="lede">
+    Every network was scored on the same held-out matches from three tracking sources. spellF1
+    counts whole possessions recovered, so both flicker and merging cost.
+</p>
+
+<div class="card chart">@((MarkupString)Charts.Results(Data.Benchmark))</div>
+<p class="note">For slides: <a href="/charts/results.svg">results.svg</a> · <a href="/charts/results.svg?theme=dark">dark</a></p>
+
+<div class="card tablewrap" style="margin: 1rem 0">
+    <table>
+        <thead>
+            <tr>
+                <th>spellF1</th>
+                @foreach (string s in Benchmark.SourceOrder) { <th>@Data.Benchmark.SourceNames[s]</th> }
+                <th>weights set</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var row in Data.Benchmark.Rows)
+            {
+                <tr>
+                    <td>@row.Label</td>
+                    @foreach (string s in Benchmark.SourceOrder) { <td>@row.Sources[s].SpellF1.ToString("0.000")</td> }
+                    <td>@(Data.Benchmark.Weights.TryGetValue(row.Label, out long w) ? w.ToString("N0") : "–")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<h2 style="margin-top: 1.6rem">Feedback, pass by pass</h2>
+<p>
+    Experiment B: after each reply the network was scored on practice matches and the model was told
+    how it did. Pass 5 is the one to show: a new idea made things much worse, and the next reply
+    names the mechanism of its own bug and fixes it.
+</p>
+<div class="card chart">@((MarkupString)Charts.Passes(Data.PassScores))</div>
+<p class="note">For slides: <a href="/charts/passes.svg">passes.svg</a> · <a href="/charts/passes.svg?theme=dark">dark</a></p>
+
+<div class="grid two" style="margin-top: 1rem">
+    <div class="card">
+        <h2>What to take from it</h2>
+        <p>Where the ball is visible, 179 hand-written weights get close to 698,115 trained ones
+            (0.784 against 0.842 on Metrica). Where it is hidden for long stretches they do not
+            (0.405 against 0.724 on DFL): what training adds is inference while the ball is unseen.</p>
+    </div>
+    <div class="card">
+        <h2>What it is not</h2>
+        <p>Not a better model: training wins on every source. One run per experiment, so the spread
+            between runs is unknown, and differences under about 0.04 are noise. The full account,
+            including what went wrong, is in <code>experiment/REPORT.md</code>.</p>
+    </div>
+</div>

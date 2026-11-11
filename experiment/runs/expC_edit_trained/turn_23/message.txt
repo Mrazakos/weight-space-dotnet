@@ -1,0 +1,5 @@
+OUTPUT of your block (ran 0 s). Forward passes used: 20 of 25. Replies left: 17.
+----
+all tensors identical to BASE: True | differing: []
+passes left: 5
+----

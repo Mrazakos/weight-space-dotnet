@@ -1,0 +1,4 @@
+OUTPUT of your block (ran 0 s). Forward passes used: 14 of 25. Replies left: 24.
+----
+REFUSED, nothing was run: line 1: the name 'globals' is not allowed
+----

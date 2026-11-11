@@ -1,0 +1,68 @@
+﻿@page "/"
+@inject DemoData Data
+
+<PageTitle>Weight-space programming in .NET</PageTitle>
+
+<h1>What if a language model wrote the weights?</h1>
+<p class="lede">
+    A neural network is usually trained: millions of examples, gradient descent, a GPU. Here a language
+    model was given a description of the task and of the network, with every weight at zero, and
+    replied with the weights as text. Nothing was trained. This app runs those networks in C#.
+</p>
+
+<div class="grid four" style="margin: 1.2rem 0">
+    <div class="card">
+        <div class="step">weights the model set</div>
+        <div class="figure">396 <small>of 698,115</small></div>
+        <p class="note">Experiment A, one reply. The file is 10 KB of JSON.</p>
+    </div>
+    <div class="card">
+        <div class="step">after ten rounds of feedback</div>
+        <div class="figure">179 <small>weights</small></div>
+        <p class="note">Experiment B. Scores 0.784 where the trained network scores 0.842.</p>
+    </div>
+    <div class="card">
+        <div class="step">training steps</div>
+        <div class="figure">0</div>
+        <p class="note">No gradients, no data set, no GPU. One prompt in, one network out.</p>
+    </div>
+    <div class="card">
+        <div class="step">inference in C#</div>
+        <div class="figure">@Data.Result("expB").Elapsed.TotalMilliseconds.ToString("0") <small>ms</small></div>
+        <p class="note">Four views of @Data.Clip.TotalFrames.ToString("N0") frames on this machine. No ML runtime.</p>
+    </div>
+</div>
+
+<div class="grid two">
+    <a class="card" href="/write" style="text-decoration: none; color: inherit">
+        <div class="step">1</div>
+        <h2>Write</h2>
+        <p>Send the prompt through <code>IChatClient</code> and watch the weights light up while the
+            reply streams in. Replay the recorded replies, or ask a model live.</p>
+    </a>
+    <a class="card" href="/replay" style="text-decoration: none; color: inherit">
+        <div class="step">2</div>
+        <h2>Watch it play</h2>
+        <p>100 seconds of a match the model never saw. The hand-written network labels who has the
+            ball, next to the truth and the trained network. Record it as a video for a slide.</p>
+    </a>
+    <a class="card" href="/results" style="text-decoration: none; color: inherit">
+        <div class="step">3</div>
+        <h2>Results</h2>
+        <p>Where the hand-written networks land between a rule baseline and a network trained on
+            2.8 million labelled frames, and how feedback moved the score.</p>
+    </a>
+    <div class="card">
+        <div class="step">the .NET in it</div>
+        <h2>Three small pieces</h2>
+        <p><code>Microsoft.Extensions.AI</code>: the model is an <code>IChatClient</code>, so a recording, the Claude CLI
+            or any hosted model plug in the same way.<br />
+            <code>System.Numerics.Tensors</code>: the network's forward pass in plain C#, checked against PyTorch.<br />
+            <code>Blazor</code>: this app.</p>
+    </div>
+</div>
+
+<p class="note" style="margin-top: 1.2rem">
+    Follows <a href="https://rikiyat.github.io/blog/weight-space-programming/">Sparks of Weight-Space Programming</a>
+    (Takehi, Teoh, Zhang, Khattab). Clip: @Data.Clip.Source.
+</p>

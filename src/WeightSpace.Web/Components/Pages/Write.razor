@@ -1,0 +1,240 @@
+@page "/write"
+@rendermode InteractiveServer
+@implements IAsyncDisposable
+@using System.Diagnostics
+@using System.Text
+@using Microsoft.Extensions.AI
+@using WeightSpace.AI
+@using WeightSpace.Core
+@inject DemoData Data
+@inject IJSRuntime JS
+
+<PageTitle>Write a network</PageTitle>
+
+<h1>One prompt in, one network out</h1>
+<p class="lede">
+    The prompt goes to a model through <code>IChatClient</code>. The reply ends with a block of edit
+    statements; each one is applied to the network the moment its line arrives. Grey means a weight is
+    still zero.
+</p>
+
+<div class="controls">
+    <label>Who answers
+        <select @bind="_source" disabled="@_running">
+            <option value="A">Recording: experiment A, one reply</option>
+            <option value="B">Recording: experiment B, eleven replies with feedback</option>
+            <option value="live">Live: Claude through its CLI, tools off (minutes)</option>
+        </select>
+    </label>
+    @if (_source == "live")
+    {
+        <label>Effort
+            <select @bind="_effort" disabled="@_running">
+                <option value="low">low</option>
+                <option value="medium">medium</option>
+                <option value="high">high</option>
+            </select>
+        </label>
+    }
+    <button class="primary" @onclick="Run" disabled="@_running">@(_running ? "Writing…" : "Write the network")</button>
+    @if (_running)
+    {
+        <button @onclick="Cancel">Stop</button>
+    }
+    @if (_done)
+    {
+        <a href="/replay?net=session&autoplay=1">Watch this network play →</a>
+    }
+</div>
+
+<div class="counter">
+    <div><span class="figure">@_nonZero.ToString("N0")</span> <span class="note">of @Network.TotalWeights.ToString("N0") weights set</span></div>
+    <div><span class="figure">@_applied</span> <span class="note">edit statements applied@(_refused > 0 ? $", {_refused} skipped" : "")</span></div>
+    @if (_status.Length > 0)
+    {
+        <div class="pill">@_status</div>
+    }
+</div>
+
+<canvas @ref="_canvas" class="stage" width="1600" height="640"
+        aria-label="The network's 24 weight tensors as rectangles; weights light up as the reply sets them"></canvas>
+
+<div class="grid two" style="margin-top: 1rem">
+    <div class="card">
+        <h2>The prompt, reduced to its core</h2>
+        <pre class="scroll">@Data.CorePrompt("01-write-from-scratch")</pre>
+        <p class="note" style="margin-top: .6rem">
+            What is actually sent is @_fullPrompt.Length.ToString("N0") characters: the same sections with the
+            full input table, the feature code and the exact formulas.
+        </p>
+        <details>
+            <summary>Show the full prompt</summary>
+            <pre class="scroll">@_fullPrompt</pre>
+        </details>
+    </div>
+    <div class="card">
+        <h2>The reply@(_turnLabel.Length > 0 ? $" — {_turnLabel}" : "")</h2>
+        <pre class="scroll" @ref="_replyBox">@_replyText</pre>
+        @if (_skipped.Count > 0)
+        {
+            <p class="note" style="margin-top: .6rem">Skipped: @string.Join(" · ", _skipped.Take(3))</p>
+        }
+    </div>
+</div>
+
+@code {
+    private const string RunA = "expA_scratch_oneshot", RunB = "expB_scratch_passes10";
+
+    private ElementReference _canvas, _replyBox;
+    private IJSObjectReference? _map;
+    private CancellationTokenSource? _cts;
+    private string _source = "A", _effort = "medium", _status = "", _turnLabel = "", _replyText = "";
+    private readonly string _fullPrompt = Repo.Sent(RunA, 0);
+    private readonly StringBuilder _reply = new();
+    private readonly List<string> _skipped = [];
+    private readonly List<object[]> _pending = [];
+    private readonly Stopwatch _sinceFlush = new();
+    private bool _running, _done;
+    private int _nonZero, _applied, _refused;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+        _map = await JS.InvokeAsync<IJSObjectReference>("import", "./js/weightmap.js");
+        await _map.InvokeVoidAsync("init", _canvas, Data.WeightMapLayoutJson, "light");
+    }
+
+    private void Cancel() => _cts?.Cancel();
+
+    private async Task Run()
+    {
+        _cts = new CancellationTokenSource();
+        (_running, _done, _nonZero, _applied, _refused, _status, _turnLabel) = (true, false, 0, 0, 0, "", "");
+        _reply.Clear();
+        _skipped.Clear();
+        _replyText = "";
+        if (_map is not null) await _map.InvokeVoidAsync("reset");
+        var network = new Network { Name = "session" };
+        try
+        {
+            switch (_source)
+            {
+                case "A":
+                    network.Description = "A: written in one reply (replayed)";
+                    network.Probes = [.. Data.Network("expA").Probes];
+                    await Turn(new ReplayChatClient(Repo.Reply(RunA, 0), 40, TimeSpan.FromMilliseconds(6)), _fullPrompt, network, null);
+                    break;
+
+                case "B":
+                    network.Description = "B: eleven replies with feedback (replayed)";
+                    network.Probes = [.. Data.Network("expB").Probes];
+                    var passes = new Dictionary<int, Network>();
+                    for (int turn = 0; turn <= 10 && !_cts.IsCancellationRequested; turn++)
+                    {
+                        _turnLabel = turn < 10 ? $"reply {turn + 1} of 11" : "final reply";
+                        _reply.Clear();
+                        await Turn(new ReplayChatClient(Repo.Reply(RunB, turn), 40, TimeSpan.FromMilliseconds(4)),
+                            Repo.Sent(RunB, turn), network, n => passes.GetValueOrDefault(n));
+                        if (turn < 10)
+                        {
+                            passes[turn + 1] = network.Clone();
+                            var score = Data.PassScores[turn];
+                            _status = $"practice pass {turn + 1}: spellF1 {score["ALL"]:0.000} (DFL {score["DFL"]:0.00}, SkillCorner {score["SC"]:0.00}, Metrica {score["MET"]:0.00})";
+                            StateHasChanged();
+                            await Task.Delay(900, _cts.Token);
+                        }
+                    }
+                    break;
+
+                default:
+                    network.Description = $"written live by Claude (effort {_effort})";
+                    var live = new ClaudeCliChatClient(effort: _effort);
+                    _status = "waiting for the model…";
+                    await Turn(live, _fullPrompt, network, null);
+                    _status = live.LastCallWasToolFree == true ? "tool-free call confirmed" : "";
+                    break;
+            }
+            Data.Register("session", network);
+            _done = true;
+        }
+        catch (OperationCanceledException) { _status = "stopped"; }
+        catch (Exception e) { _status = "failed: " + e.Message; }
+        finally
+        {
+            _running = false;
+            await Flush();
+        }
+    }
+
+    private async Task Turn(IChatClient client, string prompt, Network network, Func<int, Network?>? restore)
+    {
+        _sinceFlush.Restart();
+        await foreach (var e in new WeightWriter(client).WriteAsync(prompt, network, () => new Network(), restore, _cts!.Token))
+        {
+            switch (e)
+            {
+                case WriterEvent.Text text:
+                    _reply.Append(text.Delta);
+                    break;
+                case WriterEvent.Thinking thinking:
+                    _status = $"the model is reasoning: {thinking.Tokens:N0} tokens";
+                    break;
+                case WriterEvent.Edit edit:
+                    _nonZero = edit.NonZeroWeights;
+                    if (!edit.Outcome.Applied)
+                    {
+                        _refused++;
+                        _skipped.Add($"{edit.Outcome.Text} ({edit.Outcome.Error})");
+                    }
+                    else
+                    {
+                        _applied++;
+                        if (edit.Outcome.Tensor is { } key)
+                            _pending.Add([key, edit.Outcome.Indices, edit.Outcome.Indices.Select(i => network[key].Data[i]).ToArray()]);
+                        else
+                            await Redraw(network);                 // reset or restore: everything changed
+                    }
+                    break;
+            }
+            if (_sinceFlush.ElapsedMilliseconds >= 50) await Flush();
+        }
+        await Flush();
+    }
+
+    /// <summary>Send what accumulated to the canvas and the page, at most about 20 times a second.</summary>
+    private async Task Flush()
+    {
+        _sinceFlush.Restart();
+        _replyText = _reply.Length > 6000 ? "…" + _reply.ToString(_reply.Length - 6000, 6000) : _reply.ToString();
+        if (_map is not null && _pending.Count > 0)
+        {
+            var batch = _pending.ToArray();
+            _pending.Clear();
+            await _map.InvokeVoidAsync("add", (object)batch);
+        }
+        StateHasChanged();
+        if (_map is not null) await _map.InvokeVoidAsync("scrollToEnd", _replyBox);
+    }
+
+    private async Task Redraw(Network network)
+    {
+        _pending.Clear();
+        if (_map is null) return;
+        await _map.InvokeVoidAsync("reset");
+        foreach (var (key, tensor) in network.Tensors)
+        {
+            int[] idx = [.. Enumerable.Range(0, tensor.Data.Length).Where(i => tensor.Data[i] != 0f)];
+            if (idx.Length > 0) _pending.Add([key, idx, idx.Select(i => tensor.Data[i]).ToArray()]);
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        _cts?.Cancel();
+        try
+        {
+            if (_map is not null) await _map.DisposeAsync();
+        }
+        catch (JSDisconnectedException) { }
+    }
+}

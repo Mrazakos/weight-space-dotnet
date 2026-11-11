@@ -1,0 +1,131 @@
+@page "/replay"
+@rendermode InteractiveServer
+@implements IAsyncDisposable
+@inject DemoData Data
+@inject IJSRuntime JS
+
+<PageTitle>Watch it play</PageTitle>
+
+<h1>100 seconds of a match the model never saw</h1>
+<p class="lede">
+    Blue is home, orange is away, grey is dead ball. The frame of the pitch takes the colour of what the
+    hand-written network says right now; the three tracks at the bottom compare it with the truth and
+    with the network trained by gradient descent.
+</p>
+
+<div class="controls">
+    <label>Network
+        <select value="@_id" @onchange="ChangeNetwork">
+            @foreach (var (id, title) in Networks)
+            {
+                <option value="@id">@title</option>
+            }
+        </select>
+    </label>
+    <button id="replay-play" class="primary">Play</button>
+    <input id="replay-scrub" type="range" min="0" max="1000" value="0" aria-label="Position in the clip" />
+    <label>Speed
+        <select id="replay-speed">
+            <option value="0.5">0.5×</option>
+            <option value="1" selected>1×</option>
+            <option value="2">2×</option>
+            <option value="4">4×</option>
+        </select>
+    </label>
+    <button @onclick="ToggleTheme">@(_theme == "dark" ? "Light" : "Dark") stage</button>
+    <button id="replay-record" title="Plays the clip once from the start and saves it as a video file">Record video</button>
+</div>
+
+<canvas @ref="_canvas" class="stage" width="1920" height="1080"
+        aria-label="Animated pitch with players and ball, three tracks of possession labels and the hand-written recurrent units"></canvas>
+
+<div class="grid two" style="margin-top: 1rem">
+    <div class="card tablewrap">
+        <table>
+            <thead><tr><th>on this clip</th><th>frames right</th><th>possessions found</th></tr></thead>
+            <tbody>
+                <tr><td>Reference labels</td><td>–</td><td>@_truthPossessions</td></tr>
+                <tr><td>Written by hand (@_net.NonZero.ToString("N0") weights)</td><td>@_result.Accuracy(Data.Clip).ToString("P1")</td><td>@_netPossessions</td></tr>
+                <tr><td>Trained by SGD (698,115 weights)</td><td>@_trainedAccuracy.ToString("P1")</td><td>@_trainedPossessions</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="card">
+        <h2>For a slide</h2>
+        <p><b>Record video</b> plays the clip once and saves an MP4 (WebM where the browser cannot write MP4)
+            at 1920 × 1080, exactly as drawn here. Pick the network and the stage colour first.</p>
+        <p class="note">Inference for this network: @_result.Elapsed.TotalMilliseconds.ToString("0") ms in C#, four views of
+            @Data.Clip.TotalFrames.ToString("N0") frames. @Data.Clip.Source.</p>
+    </div>
+</div>
+
+@code {
+    [SupplyParameterFromQuery(Name = "net")] public string? NetQuery { get; set; }
+    [SupplyParameterFromQuery(Name = "theme")] public string? ThemeQuery { get; set; }
+    [SupplyParameterFromQuery(Name = "record")] public string? RecordQuery { get; set; }
+    [SupplyParameterFromQuery(Name = "autoplay")] public string? AutoplayQuery { get; set; }
+
+    private ElementReference _canvas;
+    private IJSObjectReference? _module;
+    private string _id = "expB", _theme = "light";
+    private WeightSpace.Core.Network _net = default!;
+    private WeightSpace.Core.ClipResult _result = default!;
+    private int _truthPossessions, _netPossessions, _trainedPossessions;
+    private double _trainedAccuracy;
+
+    private IEnumerable<(string Id, string Title)> Networks =>
+        Data.Has("session") ? Data.NetworkList.Append(("session", "Written in this session")) : Data.NetworkList;
+
+    protected override void OnInitialized()
+    {
+        if (NetQuery is not null && Data.Has(NetQuery)) _id = NetQuery;
+        if (ThemeQuery == "dark") _theme = "dark";
+        Compute();
+    }
+
+    private void Compute()
+    {
+        var clip = Data.Clip;
+        _net = Data.Network(_id);
+        _result = Data.Result(_id);
+        _truthPossessions = WeightSpace.Core.ClipResult.Possessions(clip.Truth.AsSpan(clip.Margin, clip.Frames));
+        _netPossessions = WeightSpace.Core.ClipResult.Possessions(_result.Labels.AsSpan(clip.Margin, clip.Frames));
+        _trainedPossessions = WeightSpace.Core.ClipResult.Possessions(clip.Trained.AsSpan(clip.Margin, clip.Frames));
+        _trainedAccuracy = Enumerable.Range(clip.Margin, clip.Frames).Count(t => clip.Trained[t] == clip.Truth[t]) / (double)clip.Frames;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+        _module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/replay.js");
+        await _module.InvokeVoidAsync("init", _canvas, $"/api/replay/{_id}", _theme);
+        if (RecordQuery == "1") _ = _module.InvokeVoidAsync("record");
+        else if (AutoplayQuery == "1") await _module.InvokeVoidAsync("play");
+    }
+
+    private async Task ChangeNetwork(ChangeEventArgs e)
+    {
+        _id = e.Value?.ToString() ?? _id;
+        Compute();
+        if (_module is not null) await _module.InvokeVoidAsync("load", $"/api/replay/{_id}");
+    }
+
+    private async Task ToggleTheme()
+    {
+        _theme = _theme == "dark" ? "light" : "dark";
+        if (_module is not null) await _module.InvokeVoidAsync("setTheme", _theme);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            if (_module is not null)
+            {
+                await _module.InvokeVoidAsync("dispose");
+                await _module.DisposeAsync();
+            }
+        }
+        catch (JSDisconnectedException) { }
+    }
+}

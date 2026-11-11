@@ -1,0 +1,188 @@
+{
+ "metric": "spellF1 on the held-out benchmark",
+ "source_names": {
+  "DFL": "DFL (optical, degraded)",
+  "SC": "SkillCorner (broadcast)",
+  "MET": "Metrica game 3"
+ },
+ "weights": {
+  "A  written in one reply": 396,
+  "B  written, 10 practice passes": 179,
+  "Trained, one model": 698115,
+  "Trained, 3-model ensemble": 2094345
+ },
+ "rows": [
+  {
+   "label": "Nearest player + 4 s vote",
+   "kind": "none",
+   "sources": {
+    "DFL": {
+     "spell_f1": 0.202,
+     "macro_f1": 0.5333,
+     "n_pred_spells": 2359,
+     "n_gt_spells": 1102
+    },
+    "SC": {
+     "spell_f1": 0.3177,
+     "macro_f1": 0.7021,
+     "n_pred_spells": 2816,
+     "n_gt_spells": 1456
+    },
+    "MET": {
+     "spell_f1": 0.4158,
+     "macro_f1": 0.8115,
+     "n_pred_spells": 559,
+     "n_gt_spells": 285
+    }
+   }
+  },
+  {
+   "label": "A  written in one reply",
+   "kind": "written",
+   "sources": {
+    "DFL": {
+     "spell_f1": 0.3783,
+     "macro_f1": 0.7412,
+     "n_pred_spells": 814,
+     "n_gt_spells": 1102
+    },
+    "SC": {
+     "spell_f1": 0.4711,
+     "macro_f1": 0.802,
+     "n_pred_spells": 1217,
+     "n_gt_spells": 1456
+    },
+    "MET": {
+     "spell_f1": 0.5458,
+     "macro_f1": 0.8089,
+     "n_pred_spells": 254,
+     "n_gt_spells": 285
+    }
+   }
+  },
+  {
+   "label": "B  written, 10 practice passes",
+   "kind": "written",
+   "sources": {
+    "DFL": {
+     "spell_f1": 0.4046,
+     "macro_f1": 0.7702,
+     "n_pred_spells": 987,
+     "n_gt_spells": 1102
+    },
+    "SC": {
+     "spell_f1": 0.5471,
+     "macro_f1": 0.8423,
+     "n_pred_spells": 1427,
+     "n_gt_spells": 1456
+    },
+    "MET": {
+     "spell_f1": 0.7836,
+     "macro_f1": 0.9163,
+     "n_pred_spells": 278,
+     "n_gt_spells": 285
+    }
+   }
+  },
+  {
+   "label": "Trained, one model",
+   "kind": "trained",
+   "sources": {
+    "DFL": {
+     "spell_f1": 0.7243,
+     "macro_f1": 0.912,
+     "n_pred_spells": 1003,
+     "n_gt_spells": 1102
+    },
+    "SC": {
+     "spell_f1": 0.7255,
+     "macro_f1": 0.9127,
+     "n_pred_spells": 1353,
+     "n_gt_spells": 1456
+    },
+    "MET": {
+     "spell_f1": 0.8417,
+     "macro_f1": 0.9342,
+     "n_pred_spells": 267,
+     "n_gt_spells": 285
+    }
+   }
+  },
+  {
+   "label": "Trained, 3-model ensemble",
+   "kind": "trained",
+   "sources": {
+    "DFL": {
+     "spell_f1": 0.7408,
+     "macro_f1": 0.9154,
+     "n_pred_spells": 978,
+     "n_gt_spells": 1102
+    },
+    "SC": {
+     "spell_f1": 0.7467,
+     "macro_f1": 0.9215,
+     "n_pred_spells": 1314,
+     "n_gt_spells": 1456
+    },
+    "MET": {
+     "spell_f1": 0.8545,
+     "macro_f1": 0.9366,
+     "n_pred_spells": 266,
+     "n_gt_spells": 285
+    }
+   }
+  }
+ ],
+ "expB_dev_history": [
+  [
+   1,
+   0.4797,
+   0.8136
+  ],
+  [
+   2,
+   0.495,
+   0.8069
+  ],
+  [
+   3,
+   0.5482,
+   0.8218
+  ],
+  [
+   4,
+   0.5443,
+   0.8344
+  ],
+  [
+   5,
+   0.4631,
+   0.6855
+  ],
+  [
+   6,
+   0.5575,
+   0.8394
+  ],
+  [
+   7,
+   0.557,
+   0.8376
+  ],
+  [
+   8,
+   0.5587,
+   0.8385
+  ],
+  [
+   9,
+   0.553,
+   0.8374
+  ],
+  [
+   10,
+   0.5591,
+   0.8388
+  ]
+ ]
+}

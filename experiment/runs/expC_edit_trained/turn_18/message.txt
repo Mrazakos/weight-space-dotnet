@@ -1,0 +1,13 @@
+OUTPUT of your block (ran 0 s). Forward passes used: 14 of 25. Replies left: 22.
+----
+passes left 11
+Traceback (most recent call last):
+  File "<analysis>", line 3, in <module>
+NameError: name 'D' is not defined
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "<analysis>", line 4, in <module>
+NameError: name 'NameError' is not defined. Did you mean: 'TypeError'?
+----

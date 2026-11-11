@@ -1,0 +1,8 @@
+OUTPUT of your block (ran 438 s). Forward passes used: 20 of 25. Replies left: 19.
+----
+BASE (resim)               | df sF1 0.7488 mF1 0.9160 n 144/174 acc 0.9285 | sc sF1 0.8899 mF1 0.9699 n  71/ 75 acc 0.9762
+gru2 z-bias -0.5           | df sF1 0.7561 mF1 0.9162 n 154/174 acc 0.9281 | sc sF1 0.8749 mF1 0.9691 n  74/ 75 acc 0.9756
+gru2 z-bias +0.5           | df sF1 0.7194 mF1 0.9134 n 134/174 acc 0.9250 | sc sF1 0.8709 mF1 0.9656 n  65/ 75 acc 0.9727
+gru1 z-bias -0.5           | df sF1 0.7522 mF1 0.9196 n 146/174 acc 0.9308 | sc sF1 0.8727 mF1 0.9626 n  71/ 75 acc 0.9705
+gru1 z-bias +0.5           | df sF1 0.7227 mF1 0.9125 n 141/174 acc 0.9253 | sc sF1 0.8860 mF1 0.9647 n  70/ 75 acc 0.9722
+----

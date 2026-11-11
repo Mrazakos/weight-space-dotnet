@@ -1,0 +1,13 @@
+{
+  "name": "weightspace-capture",
+  "private": true,
+  "type": "module",
+  "description": "Screenshots and replay videos of the running app, for slides. Uses the installed Edge or Chrome.",
+  "scripts": {
+    "shots": "node capture.mjs shots",
+    "videos": "node capture.mjs videos"
+  },
+  "dependencies": {
+    "playwright-core": "1.56.1"
+  }
+}
