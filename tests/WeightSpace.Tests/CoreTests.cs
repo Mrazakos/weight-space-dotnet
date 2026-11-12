@@ -1,5 +1,6 @@
 using System.Runtime.InteropServices;
 using WeightSpace.Core;
+using WeightSpace.Onnx;
 
 namespace WeightSpace.Tests;
 
@@ -53,6 +54,36 @@ public class ParityTests
         for (int i = 0; i < probs.Length; i++) worst = MathF.Max(worst, MathF.Abs(probs[i] - result.Probabilities[i]));
         Assert.True(worst < 1e-3f, $"largest probability difference {worst}");
         Assert.Equal(labels.ToArray(), result.Labels);
+    }
+
+    [Theory]
+    [InlineData("expA")]
+    [InlineData("expB")]
+    public void ONNX_Runtime_matches_the_PyTorch_reference(string name)
+    {
+        var result = Pipeline.Run(Network.Load(Repo.Data("networks", name + ".json")), Clip, Engines.Factory("onnx"));
+        Assert.Equal("ONNX Runtime", result.Engine);
+
+        byte[] raw = File.ReadAllBytes(Repo.Data("reference", name + ".bin"));
+        int T = Clip.TotalFrames;
+        var probs = MemoryMarshal.Cast<byte, float>(raw.AsSpan(0, T * 3 * sizeof(float)));
+        float worst = 0f;
+        for (int i = 0; i < probs.Length; i++) worst = MathF.Max(worst, MathF.Abs(probs[i] - result.Probabilities[i]));
+        Assert.True(worst < 1e-3f, $"largest probability difference {worst}");
+        Assert.Equal(raw.AsSpan(T * 3 * sizeof(float), T).ToArray(), result.Labels);
+    }
+
+    [Fact]
+    public void ONNX_and_C_sharp_agree_on_logits_and_layer_1_states()
+    {
+        var net = Network.Load(Repo.Data("networks", "expB.json"));
+        var x = Clip.Views[0];
+        using var onnx = new OnnxPossessionEngine(net);
+        var a = onnx.Forward(x);
+        var b = new PossessionNet(net).Forward(x);
+        Assert.True(a.Logits.Zip(b.Logits).Max(p => MathF.Abs(p.First - p.Second)) < 1e-3f);
+        Assert.True(a.Gru1F.Zip(b.Gru1F).Max(p => MathF.Abs(p.First - p.Second)) < 1e-3f);
+        Assert.True(a.Gru1B.Zip(b.Gru1B).Max(p => MathF.Abs(p.First - p.Second)) < 1e-3f);
     }
 
     [Fact]

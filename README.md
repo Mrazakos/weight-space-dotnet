@@ -30,7 +30,7 @@ Needs the .NET 10 SDK. Nothing else: the recorded replies, the networks and a 10
 in the repository.
 
 ```bash
-dotnet test                                                  # 19 tests, including parity with PyTorch
+dotnet test                                                  # 22 tests, including parity with PyTorch
 dotnet run --project src/WeightSpace.Cli -- run expB          # run a network on the clip, in the console
 dotnet run --project src/WeightSpace.Web                      # the app; open the URL it prints
 ```
@@ -97,8 +97,12 @@ export script runs the two networks in ONNX Runtime (Python) and compares with P
 differ by about 1e-6 for A and 2.5e-5 for B. `python tools/export_onnx.py --verify file.onnx
 --against expB` does that check for any other file.
 
-**The .NET projects do not use these files.** The app runs the plain C# forward pass above. Reading
-or running ONNX from .NET is not implemented here; it is the open item.
+**The .NET projects run the networks through ONNX Runtime.** `WeightSpace.Onnx` loads
+`possessionnet.onnx`, writes a network's weights into a copy of its bytes (ONNX Runtime does not
+override constant initializers), and runs it with `Microsoft.ML.OnnxRuntime`. Any network works this
+way, including one written a moment ago on the Write page. The plain C# forward pass is still
+there as a reference and a fallback: `--engine csharp` in the CLI, or `WEIGHTSPACE_ENGINE=csharp`
+for the app. Tests check the ONNX path against PyTorch's reference output.
 
 ## For a talk
 
@@ -123,6 +127,7 @@ To make them again, start the app on port 5199 and run `node tools/capture/captu
 ```
 src/WeightSpace.Core     the network, the edits language, the decoder, the clip          no dependencies but System.Numerics.Tensors
 src/WeightSpace.AI       ReplayChatClient, ClaudeCliChatClient, WeightWriter             Microsoft.Extensions.AI.Abstractions
+src/WeightSpace.Onnx     OnnxPossessionEngine: runs a network through ONNX Runtime        Microsoft.ML.OnnxRuntime
 src/WeightSpace.Web      the Blazor app; charts are SVG built in C#, canvases are small JS modules
 src/WeightSpace.Cli      run a network, or write one, from the console
 tests/                   parity with PyTorch, the parser, replaying the recorded replies

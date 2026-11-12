@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using System.Text;
 using System.Text.Json;
 using WeightSpace.Core;
+using WeightSpace.Onnx;
 
 namespace WeightSpace.Web;
 
@@ -80,7 +81,7 @@ public sealed class DemoData
         return Core.Network.Load(Repo.Data("networks", key + ".json"));
     });
 
-    public ClipResult Result(string id) => _results.GetOrAdd(id, key => Pipeline.Run(Network(key), Clip));
+    public ClipResult Result(string id) => _results.GetOrAdd(id, key => Pipeline.Run(Network(key), Clip, Engines.Factory()));
 
     /// <summary>A network written during this session (the Write page) can be replayed too.</summary>
     public void Register(string id, Network network)

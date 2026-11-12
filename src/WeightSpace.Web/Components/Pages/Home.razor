@@ -27,9 +27,9 @@
         <p class="note">No gradients, no data set, no GPU. One prompt in, one network out.</p>
     </div>
     <div class="card">
-        <div class="step">inference in C#</div>
+        <div class="step">inference through @Data.Result("expB").Engine</div>
         <div class="figure">@Data.Result("expB").Elapsed.TotalMilliseconds.ToString("0") <small>ms</small></div>
-        <p class="note">Four views of @Data.Clip.TotalFrames.ToString("N0") frames on this machine. No ML runtime.</p>
+        <p class="note">Four views of @Data.Clip.TotalFrames.ToString("N0") frames on this machine. Run by @Data.Result("expB").Engine.</p>
     </div>
 </div>
 
